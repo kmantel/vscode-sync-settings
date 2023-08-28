@@ -63,9 +63,6 @@ export async function review(): Promise<void> {
 		if(!identical) {
 			const result = await vscode.window.showInformationMessage(
 				'Your settings have been modified since the last save. Do you want to sync your settings?',
-				{
-					modal: true,
-				},
 				'Yes',
 			);
 
