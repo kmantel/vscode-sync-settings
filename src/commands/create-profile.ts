@@ -82,9 +82,6 @@ export async function createProfile(): Promise<void> {
 
 		const result = await window.showInformationMessage(
 			`Do you want to switch and apply the new profile '${newProfile}'`,
-			{
-				modal: true,
-			},
 			'Yes',
 		);
 

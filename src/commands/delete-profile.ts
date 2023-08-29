@@ -25,7 +25,7 @@ export async function deleteProfile(): Promise<void> {
 			return;
 		}
 		else if(selected.label === profile) {
-			await window.showInformationMessage(`You can't delete the current profile '${profile}'`, { modal: true });
+			await window.showInformationMessage(`You can't delete the current profile '${profile}'`);
 
 			return;
 		}
@@ -36,7 +36,7 @@ export async function deleteProfile(): Promise<void> {
 
 		await repository.deleteProfile(newProfile);
 
-		await window.showInformationMessage(`The profile '${newProfile}' has been deleted`, { modal: true });
+		await window.showInformationMessage(`The profile '${newProfile}' has been deleted`);
 	}
 	catch (error: unknown) {
 		Logger.error(error);
