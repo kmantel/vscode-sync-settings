@@ -335,9 +335,6 @@ export class FileRepository extends Repository {
 			if(restart) {
 				const result = await vscode.window.showInformationMessage(
 					'The editor will be restarted after applying the profile. Do you want to continue?',
-					{
-						modal: true,
-					},
 					'Yes',
 				);
 
