@@ -70,6 +70,6 @@ export async function viewDifferences(): Promise<void> {
 		}
 	}
 	else {
-		await vscode.window.showInformationMessage('No differences can be shown since the repository isn\'t defined.', { modal: true });
+		await vscode.window.showInformationMessage('No differences can be shown since the repository isn\'t defined.');
 	}
 }
