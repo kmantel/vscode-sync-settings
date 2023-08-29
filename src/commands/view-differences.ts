@@ -66,7 +66,7 @@ export async function viewDifferences(): Promise<void> {
 		}
 
 		if(identical) {
-			await vscode.window.showInformationMessage('There is no differences.', { modal: true });
+			await vscode.window.showInformationMessage('There is no differences.');
 		}
 	}
 	else {
