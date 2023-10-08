@@ -323,6 +323,8 @@ export class FileRepository extends Repository {
 		const userDataPath = getUserDataPath(this._settings);
 		const ancestorProfile = await this.getAncestorProfile(this.profile);
 		const resources = syncSettings.resources ?? [Resource.Extensions, Resource.Keybindings, Resource.Settings, Resource.Snippets, Resource.UIState];
+		const config = vscode.workspace.getConfiguration('syncSettings');
+		const confirmSync = config.get<boolean>('confirmSync') ?? false;
 
 		if(this._settings.remote) {
 			if(resources.includes(Resource.Extensions)) {
@@ -334,7 +336,7 @@ export class FileRepository extends Repository {
 		else {
 			const restart = await this.shouldRestartApp(resources, userDataPath);
 
-			if(restart) {
+			if(restart && confirmSync) {
 				const result = await vscode.window.showInformationMessage(
 					'The editor will be restarted after applying the profile. Do you want to continue?',
 					{
