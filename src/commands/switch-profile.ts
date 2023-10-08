@@ -33,6 +33,9 @@ export async function switchProfile(): Promise<void> {
 
 		const result = await window.showInformationMessage(
 			'Do you want to apply the profile?',
+			{
+				modal: true,
+			},
 			'Yes',
 		);
 
