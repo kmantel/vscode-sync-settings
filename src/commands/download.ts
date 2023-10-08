@@ -16,6 +16,9 @@ export async function download(): Promise<void> {
 	if(confirmSync) {
 		const result = await window.showInformationMessage(
 			'Do you want to download your settings (repository -> user)?',
+			{
+				modal: true,
+			},
 			'Yes',
 		);
 

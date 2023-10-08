@@ -16,6 +16,9 @@ export async function upload(): Promise<void> {
 	if(confirmSync) {
 		const result = await window.showInformationMessage(
 			'Do you want to upload your settings (user -> repository)?',
+			{
+				modal: true,
+			},
 			'Yes',
 		);
 
