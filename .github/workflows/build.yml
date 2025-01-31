@@ -17,7 +17,7 @@ jobs:
       - name: Get version
         run: echo "SYNC_PKG_VERSION=$(jq -r .version package.json)" >> $GITHUB_ENV
       - run: npm run package
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: sync-settings-${{ env.SYNC_PKG_VERSION }}.vsix
           path: sync-settings-${{ env.SYNC_PKG_VERSION }}.vsix
