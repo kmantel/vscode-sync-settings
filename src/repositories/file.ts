@@ -30,6 +30,7 @@ import { preprocessJSONC } from '../utils/preprocess-jsonc';
 import { readStateDB } from '../utils/read-statedb';
 import { removeProperties } from '../utils/remove-properties';
 import { restartApp } from '../utils/restart-app';
+import { sortExtensionList } from '../utils/sort-extension-list';
 import { uninstallExtension } from '../utils/uninstall-extension';
 import { getVSIXManager } from '../utils/vsix-manager';
 import { writeStateDB } from '../utils/write-statedb';
@@ -228,14 +229,11 @@ export class FileRepository extends Repository {
 
 	public override async listProfileExtensions(profile: string = this.profile): Promise<ExtensionList> { // {{{
 		const settings = await this.loadProfileSettings(profile);
-		let dataPath = this.getProfileExtensionsPath(profile);
+		const dataPath = this.getProfileExtensionsPath(profile);
 
 		if(!settings.extends) {
 			if(!await exists(dataPath)) {
-				dataPath = this.getProfileExtensionsOldPath(profile);
-				if(!await exists(dataPath)) {
-					return { disabled: [], enabled: [] };
-				}
+				return { disabled: [], enabled: [] };
 			}
 
 			const data = await fse.readFile(dataPath, 'utf-8');
@@ -262,10 +260,7 @@ export class FileRepository extends Repository {
 		}
 
 		if(!await exists(dataPath)) {
-			dataPath = this.getProfileExtensionsOldPath(profile);
-			if(!await exists(dataPath)) {
-				return this.listProfileExtensions(settings.extends);
-			}
+			return this.listProfileExtensions(settings.extends);
 		}
 
 		const data = await fse.readFile(dataPath, 'utf-8');
@@ -409,6 +404,7 @@ export class FileRepository extends Repository {
 		const resources = syncSettings.get<string[]>('resources') ?? [Resource.Extensions, Resource.Keybindings, Resource.Settings, Resource.Snippets, Resource.UIState];
 
 		Logger.info('serialize to:', this._rootPath);
+		Logger.info('resources:', resources.join(', '));
 
 		const profileSettings = await this.loadProfileSettings();
 		const userDataPath = getUserDataPath(this._settings);
@@ -583,10 +579,6 @@ export class FileRepository extends Repository {
 		return path.join(this._rootPath, 'profiles', profile, 'data', 'ui-state.diff.yml');
 	} // }}}
 
-	protected getProfileExtensionsOldPath(profile: string = this.profile): string { // {{{
-		return path.join(this._rootPath, 'profiles', profile, 'extensions.yml');
-	} // }}}
-
 	protected async getProfileKeybindings(profile: string, keybindingsPerPlatform: boolean): Promise<string | undefined> { // {{{
 		const syncSettings = await this.loadProfileSyncSettings(profile);
 		const profilePerPlatform = syncSettings.keybindingsPerPlatform ?? true;
@@ -606,10 +598,6 @@ export class FileRepository extends Repository {
 
 	protected getProfileSnippetsPath(profile: string = this.profile): string { // {{{
 		return path.join(this._rootPath, 'profiles', profile, 'data', 'snippets');
-	} // }}}
-
-	protected getProfileSyncSettingsOldPath(profile: string = this.profile): string { // {{{
-		return path.join(this._rootPath, 'profiles', profile, 'config.yml');
 	} // }}}
 
 	protected getProfileSyncSettingsPath(profile: string = this.profile): string { // {{{
@@ -814,20 +802,16 @@ export class FileRepository extends Repository {
 	} // }}}
 
 	protected async loadProfileSyncSettings(profile: string = this.profile): Promise<ProfileSyncSettings> { // {{{
-		let path = this.getProfileSyncSettingsPath(profile);
+		const path = this.getProfileSyncSettingsPath(profile);
 
 		if(!await exists(path)) {
-			path = this.getProfileSyncSettingsOldPath(profile);
+			const settings = await this.loadProfileSettings(profile);
 
-			if(!await exists(path)) {
-				const settings = await this.loadProfileSettings(profile);
-
-				if(settings.extends) {
-					return this.loadProfileSyncSettings(settings.extends);
-				}
-				else {
-					return {};
-				}
+			if(settings.extends) {
+				return this.loadProfileSyncSettings(settings.extends);
+			}
+			else {
+				return {};
 			}
 		}
 
@@ -1144,8 +1128,6 @@ export class FileRepository extends Repository {
 			}
 		}
 
-		await fse.remove(this.getProfileSyncSettingsOldPath());
-
 		if(length > 0) {
 			const data = yaml.stringify(settings);
 
@@ -1257,23 +1239,23 @@ export class FileRepository extends Repository {
 			const builtinEnabled = profile.builtin?.disabled && editor.builtin?.disabled ? arrayDiff(profile.builtin.disabled, editor.builtin.disabled) : [];
 
 			const output: Record<string, any> = {
-				disabled,
-				enabled,
+				disabled: sortExtensionList(disabled),
+				enabled: sortExtensionList(enabled),
 			};
 
 			if(uninstall.length > 0) {
-				output.uninstall = uninstall;
+				output.uninstall = sortExtensionList(uninstall);
 			}
 
 			if(builtinDisabled.length > 0 || builtinEnabled.length > 0) {
 				const builtin: Record<string, any> = {};
 
 				if(builtinDisabled.length > 0) {
-					builtin.disabled = builtinDisabled;
+					builtin.disabled = builtinDisabled.sort((a, b) => a.localeCompare(b));
 				}
 
 				if(builtinEnabled.length > 0) {
-					builtin.enabled = builtinEnabled;
+					builtin.enabled = builtinEnabled.sort((a, b) => a.localeCompare(b));
 				}
 
 				output.builtin = builtin;
@@ -1289,8 +1271,6 @@ export class FileRepository extends Repository {
 			encoding: 'utf-8',
 			mode: 0o600,
 		});
-
-		await fse.remove(this.getProfileExtensionsOldPath());
 
 		return editor;
 	} // }}}
