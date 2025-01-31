@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 18
       - name: Install VSCE build tool
-        run: npm i vsce
+        run: npm i @vscode/vsce
       - name: Get version
         run: echo "SYNC_PKG_VERSION=$(jq -r .version package.json)" >> $GITHUB_ENV
       - run: npm run package
